@@ -18,7 +18,7 @@ def main():
     start_time = time.time()
 
     if choice == "1":
-        wordlist = input("Ruta del diccionario: ")
+        wordlist = "wordlists/dictionary.txt"
         result, attempts = dictionary_attack(hash_target, wordlist, algorithm)
 
     elif choice == "2":
