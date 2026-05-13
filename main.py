@@ -1,8 +1,7 @@
 import time
 from attacks.dictionary import dictionary_attack
 from attacks.brute_force import brute_force_attack
-from utils.charset import LOWERCASE, LETTERS, ALPHANUMERIC, ALL
-
+from utils.charset import LOWERCASE, LETTERS, ALPHANUMERIC, SPECIAL, ALL
 def main():
     print("=== PASSWORD CRACKER ===")
 
@@ -26,7 +25,8 @@ def main():
         print("1) Solo minúsculas")
         print("2) Letras")
         print("3) Letras + números")
-        print("4) Todo")
+        print("4) Solo símbolos")
+        print("5) Todo")
 
         charset_choice = input("> ")
 
@@ -36,6 +36,8 @@ def main():
             charset = LETTERS
         elif charset_choice == "3":
             charset = ALPHANUMERIC
+        elif charset_choice == "4":
+            charset = SPECIAL
         else:
             charset = ALL
 

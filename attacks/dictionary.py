@@ -1,6 +1,6 @@
 from utils.hashing import hash_text
 
-def dictionary_attack(hash_target, wordlist_path, algorithm="md5"):
+def dictionary_attack(hash_target, wordlist_path, algorithm):
     attempts = 0
 
     try:
