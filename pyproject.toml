@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "password-cracker"
+version = "1.0.0"
+description = "Educational password cracking tool"
+authors = [{ name = "Grupo Ciber" }]
+readme = "README.md"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+password-cracker = "password_cracker.cli:run"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]

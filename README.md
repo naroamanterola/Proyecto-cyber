@@ -15,9 +15,9 @@ hola (sha256): b221d9dbb083a7f33428d7c2a3c3198ae925614d70210e28716ccaa7cd4ddb79
 
 
 meter hashcat
-mas algoritmos
+mas algoritmos HECHO
 al ejecutar meter todos los argumentos para crear libreria
 pip install ___nomnbrelib________
 --help para saber que argumentos puede meter
-+caracteres especiales
-+personalizar (x en y posicion)
++caracteres especiales HECHO
++personalizar (x en y posicion) HECHO
