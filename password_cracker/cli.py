@@ -14,6 +14,26 @@ VALID_ALGORITHMS = [
 ]
 
 
+def parse_known_positions(known_list):
+
+    positions = {}
+
+    if not known_list:
+        return positions
+
+    for item in known_list:
+
+        try:
+            pos, char = item.split(":")
+            positions[int(pos)] = char
+
+        except ValueError:
+            print(f"Formato inválido en --known: {item}")
+            exit()
+
+    return positions
+
+
 def run():
 
     parser = argparse.ArgumentParser(
@@ -24,43 +44,27 @@ def run():
     # ARGUMENTOS PRINCIPALES
     # =========================
 
-    parser.add_argument(
-        "--hash",
-        required=True,
-        help="Hash objetivo a crackear"
-    )
-
-    parser.add_argument(
-        "--algo",
-        required=True,
-        choices=VALID_ALGORITHMS,
-        help="Algoritmo de hash (md5, sha1, sha256...)"
-    )
-
-    parser.add_argument(
-        "--attack",
-        required=True,
-        choices=["dict", "brute"],
-        help="Tipo de ataque: dict o brute"
-    )
+    parser.add_argument("--hash", required=True)
+    parser.add_argument("--algo", required=True, choices=VALID_ALGORITHMS)
+    parser.add_argument("--attack", required=True, choices=["dict", "brute"])
 
     # =========================
     # DICCIONARIO
     # =========================
 
-    parser.add_argument(
-        "--wordlist",
-        help="Ruta del diccionario (obligatorio si attack=dict)"
-    )
+    parser.add_argument("--wordlist")
 
     # =========================
-    # FUERZA BRUTA CON MÁSCARA
+    # BRUTE FORCE
     # =========================
 
-    parser.add_argument(
-        "--mask",
-        help="Máscara tipo ?u?l?l?d?d (obligatorio si attack=brute)"
-    )
+    parser.add_argument("--mask")
+
+    parser.add_argument("--min-length", type=int)
+    parser.add_argument("--max-length", type=int)
+
+    parser.add_argument("--must-contain", nargs="*")
+    parser.add_argument("--known", nargs="*")
 
     args = parser.parse_args()
 
@@ -92,10 +96,16 @@ def run():
             print("Error: debes indicar --mask")
             return
 
+        known_positions = parse_known_positions(args.known)
+
         result, attempts = brute_force_attack(
             args.hash,
             args.mask,
-            args.algo
+            args.algo,
+            min_length=args.min_length,
+            max_length=args.max_length,
+            must_contain=args.must_contain,
+            known_positions=known_positions
         )
 
     else:
