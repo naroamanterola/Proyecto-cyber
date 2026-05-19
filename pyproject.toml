@@ -9,7 +9,9 @@ description = "Educational password cracking tool"
 authors = [{ name = "Grupo Ciber" }]
 readme = "README.md"
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+    "tqdm"
+]
 
 [project.scripts]
 password-cracker = "password_cracker.cli:run"
