@@ -63,12 +63,13 @@ def brute_force_attack(
 
     with tqdm(
         total=total,
-        desc="Brute force",
+        desc="Brute force",   
         unit="hash",
-        file=sys.stderr,
+        file=sys.stdout,      
         dynamic_ncols=True,
-        mininterval=0,
-        maxinterval=0.2
+        mininterval=0,        
+        maxinterval=0.05,
+        ascii=True 
     ) as pbar:
 
         for length in range(min_length, max_length + 1):

@@ -30,7 +30,7 @@ def parse_known_positions(known_list):
 
         except ValueError:
             sys.stderr.write(f"Formato inválido en --known: {item}\n")
-            exit()
+            return {}   # 👈 mejor que exit()
 
     return positions
 
@@ -103,6 +103,10 @@ def run():
     # =========================
     # RESULTADO FINAL
     # =========================
+
+    # 👇 IMPORTANTE: flush antes de cerrar CLI (Windows fix)
+    sys.stdout.flush()
+    sys.stderr.flush()
 
     sys.stderr.write("\n--- RESULTADO ---\n")
 

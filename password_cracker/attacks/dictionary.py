@@ -33,10 +33,11 @@ def dictionary_attack(hash_target, wordlist_path, algorithm):
                 total=total_words,
                 desc="Dictionary attack",
                 unit="word",
-                file=sys.stderr,
+                file=sys.stdout,     
                 dynamic_ncols=True,
-                mininterval=0,
-                maxinterval=0.2
+                mininterval=0,    
+                maxinterval=0.05,
+                ascii=True 
             ) as pbar:
 
                 for word in file:
