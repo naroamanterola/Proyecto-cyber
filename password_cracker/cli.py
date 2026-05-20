@@ -7,8 +7,17 @@ from password_cracker.attacks.dictionary import dictionary_attack
 from password_cracker.attacks.brute_force import brute_force_attack
 
 
-
+# =========================
+# FIX GLOBAL WINDOWS BUFFERING
+# =========================
 os.environ["PYTHONUNBUFFERED"] = "1"
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(line_buffering=True)
+
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(line_buffering=True)
+
 
 VALID_ALGORITHMS = [
     "md5",
@@ -35,13 +44,12 @@ def parse_known_positions(known_list):
 
         except ValueError:
             sys.stderr.write(f"Formato inválido en --known: {item}\n")
-            return {}   # 👈 mejor que exit()
+            return {}
 
     return positions
 
 
 def run():
-    print("CLI STARTED", flush=True)
 
     parser = argparse.ArgumentParser(
         description="Password Cracker (educational tool)"
@@ -107,10 +115,8 @@ def run():
     end_time = time.time()
 
     # =========================
-    # RESULTADO FINAL
+    # FINAL FLUSH (CRÍTICO)
     # =========================
-
-    # 👇 IMPORTANTE: flush antes de cerrar CLI (Windows fix)
     sys.stdout.flush()
     sys.stderr.flush()
 
@@ -125,3 +131,5 @@ def run():
     sys.stderr.write(f"Tiempo: {end_time - start_time:.2f} segundos\n")
 
 
+if __name__ == "__main__":
+    run()
