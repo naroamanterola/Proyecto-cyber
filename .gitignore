@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Pytest
+.pytest_cache/
+
 # Entornos virtuales
 venv/
 env/
