@@ -1,5 +1,6 @@
 import argparse
 import time
+import sys
 
 from password_cracker.attacks.dictionary import dictionary_attack
 from password_cracker.attacks.brute_force import brute_force_attack
@@ -28,7 +29,7 @@ def parse_known_positions(known_list):
             positions[int(pos)] = char
 
         except ValueError:
-            print(f"Formato inválido en --known: {item}")
+            sys.stderr.write(f"Formato inválido en --known: {item}\n")
             exit()
 
     return positions
@@ -40,24 +41,11 @@ def run():
         description="Password Cracker (educational tool)"
     )
 
-    # =========================
-    # ARGUMENTOS PRINCIPALES
-    # =========================
-
     parser.add_argument("--hash", required=True)
     parser.add_argument("--algo", required=True, choices=VALID_ALGORITHMS)
     parser.add_argument("--attack", required=True, choices=["dict", "brute"])
 
-    # =========================
-    # DICCIONARIO
-    # =========================
-
     parser.add_argument("--wordlist")
-
-    # =========================
-    # BRUTE FORCE
-    # =========================
-
     parser.add_argument("--mask")
 
     parser.add_argument("--min-length", type=int)
@@ -73,11 +61,10 @@ def run():
     # =========================
     # ATAQUE DICCIONARIO
     # =========================
-
     if args.attack == "dict":
 
         if not args.wordlist:
-            print("Error: debes indicar --wordlist")
+            sys.stderr.write("Error: debes indicar --wordlist\n")
             return
 
         result, attempts = dictionary_attack(
@@ -89,11 +76,10 @@ def run():
     # =========================
     # ATAQUE BRUTE FORCE
     # =========================
-
     elif args.attack == "brute":
 
         if not args.mask:
-            print("Error: debes indicar --mask")
+            sys.stderr.write("Error: debes indicar --mask\n")
             return
 
         known_positions = parse_known_positions(args.known)
@@ -109,21 +95,21 @@ def run():
         )
 
     else:
-        print("Ataque no válido")
+        sys.stderr.write("Ataque no válido\n")
         return
 
     end_time = time.time()
 
     # =========================
-    # RESULTADO
+    # RESULTADO FINAL
     # =========================
 
-    print("\n--- RESULTADO ---")
+    sys.stderr.write("\n--- RESULTADO ---\n")
 
     if result:
-        print(f"Contraseña encontrada: {result}")
+        sys.stderr.write(f"Contraseña encontrada: {result}\n")
     else:
-        print("No encontrada")
+        sys.stderr.write("No encontrada\n")
 
-    print(f"Intentos: {attempts}")
-    print(f"Tiempo: {end_time - start_time:.2f} segundos")
+    sys.stderr.write(f"Intentos: {attempts}\n")
+    sys.stderr.write(f"Tiempo: {end_time - start_time:.2f} segundos\n")

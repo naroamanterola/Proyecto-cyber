@@ -1,4 +1,5 @@
 import time
+import sys
 from tqdm import tqdm
 
 from password_cracker.utils.hashing import hash_text
@@ -9,9 +10,6 @@ def dictionary_attack(hash_target, wordlist_path, algorithm):
     attempts = 0
     start_time = time.time()
 
-    # =========================
-    # CONTAR TOTAL DE PALABRAS
-    # =========================
     try:
         with open(wordlist_path, "r", encoding="utf-8", errors="ignore") as f:
             total_words = sum(1 for _ in f)
@@ -19,51 +17,49 @@ def dictionary_attack(hash_target, wordlist_path, algorithm):
         print("Wordlist no encontrada")
         return None, attempts
 
-    print(f"\n[INFO] Total palabras: {total_words}\n")
+    tqdm.write(f"\n[INFO] Total palabras: {total_words}\n")
 
-    # =========================
-    # ATAQUE CON PROGRESO
-    # =========================
     try:
         with open(wordlist_path, "r", encoding="utf-8", errors="ignore") as file:
 
-            pbar = tqdm(total=total_words, desc="Dictionary attack", unit="word")
+            with tqdm(
+                total=total_words,
+                desc="Dictionary attack",
+                unit="word",
+                file=sys.stderr,
+                dynamic_ncols=True,
+                mininterval=0,
+                maxinterval=0.1
+            ) as pbar:
 
-            for word in file:
+                for word in file:
 
-                word = word.strip()
-                attempts += 1
+                    word = word.strip()
+                    attempts += 1
 
-                if hash_text(word, algorithm) == hash_target:
+                    if hash_text(word, algorithm) == hash_target:
 
-                    elapsed = time.time() - start_time
-                    speed = attempts / elapsed if elapsed > 0 else 0
+                        elapsed = time.time() - start_time
+                        speed = attempts / elapsed if elapsed > 0 else 0
 
-                    pbar.close()
+                        tqdm.write("\n[FOUND]")
+                        tqdm.write(f"Password: {word}")
+                        tqdm.write(f"Attempts: {attempts}")
+                        tqdm.write(f"Time: {elapsed:.2f}s")
+                        tqdm.write(f"Speed: {speed:.2f} words/s")
 
-                    print("\n[FOUND]")
-                    print(f"Password: {word}")
-                    print(f"Attempts: {attempts}")
-                    print(f"Time: {elapsed:.2f}s")
-                    print(f"Speed: {speed:.2f} words/s")
+                        return word, attempts
 
-                    return word, attempts
-
-                pbar.update(1)
-
-            pbar.close()
+                    pbar.update(1)
 
     except FileNotFoundError:
         print("Wordlist no encontrada")
         return None, attempts
 
-    # =========================
-    # NO ENCONTRADO
-    # =========================
     elapsed = time.time() - start_time
 
-    print("\n[FAIL]")
-    print(f"Attempts: {attempts}")
-    print(f"Time: {elapsed:.2f}s")
+    tqdm.write("\n[FAIL]")
+    tqdm.write(f"Attempts: {attempts}")
+    tqdm.write(f"Time: {elapsed:.2f}s")
 
     return None, attempts

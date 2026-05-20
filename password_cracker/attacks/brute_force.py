@@ -1,5 +1,6 @@
 import itertools
 import time
+import sys
 from tqdm import tqdm
 
 from password_cracker.utils.hashing import hash_text
@@ -46,62 +47,59 @@ def brute_force_attack(
     if max_length is None:
         max_length = len(charsets)
 
-    # =========================
-    # CALCULAR TOTAL DE COMBINACIONES (para tqdm)
-    # =========================
     total = 0
-
     for length in range(min_length, max_length + 1):
         current_charsets = charsets[:length]
         total += len(list(itertools.product(*current_charsets)))
 
-    print(f"\n[INFO] Total combinaciones: {total}\n")
+    tqdm.write(f"\n[INFO] Total combinaciones: {total}\n")
 
-    # =========================
-    # BARRA DE PROGRESO
-    # =========================
-    pbar = tqdm(total=total, desc="Brute force", unit="hash")
+    with tqdm(
+        total=total,
+        desc="Brute force",
+        unit="hash",
+        file=sys.stderr,
+        dynamic_ncols=True,
+        mininterval=0,
+        maxinterval=0.1
+    ) as pbar:
 
-    for length in range(min_length, max_length + 1):
+        for length in range(min_length, max_length + 1):
 
-        current_charsets = charsets[:length]
+            current_charsets = charsets[:length]
 
-        for combination in itertools.product(*current_charsets):
+            for combination in itertools.product(*current_charsets):
 
-            word = ''.join(combination)
+                word = ''.join(combination)
 
-            if not matches_constraints(
-                word,
-                must_contain,
-                known_positions
-            ):
-                continue
+                pbar.update(1)
 
-            attempts += 1
+                if not matches_constraints(
+                    word,
+                    must_contain,
+                    known_positions
+                ):
+                    continue
 
-            if hash_text(word, algorithm) == hash_target:
+                attempts += 1
 
-                elapsed = time.time() - start_time
-                speed = attempts / elapsed if elapsed > 0 else 0
+                if hash_text(word, algorithm) == hash_target:
 
-                pbar.close()
+                    elapsed = time.time() - start_time
+                    speed = attempts / elapsed if elapsed > 0 else 0
 
-                print("\n[FOUND]")
-                print(f"Password: {word}")
-                print(f"Attempts: {attempts}")
-                print(f"Time: {elapsed:.2f}s")
-                print(f"Speed: {speed:.2f} hashes/s")
+                    tqdm.write("\n[FOUND]")
+                    tqdm.write(f"Password: {word}")
+                    tqdm.write(f"Attempts: {attempts}")
+                    tqdm.write(f"Time: {elapsed:.2f}s")
+                    tqdm.write(f"Speed: {speed:.2f} hashes/s")
 
-                return word, attempts
-
-            pbar.update(1)
-
-    pbar.close()
+                    return word, attempts
 
     elapsed = time.time() - start_time
 
-    print("\n[FAIL]")
-    print(f"Attempts: {attempts}")
-    print(f"Time: {elapsed:.2f}s")
+    tqdm.write("\n[FAIL]")
+    tqdm.write(f"Attempts: {attempts}")
+    tqdm.write(f"Time: {elapsed:.2f}s")
 
     return None, attempts
