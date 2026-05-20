@@ -41,6 +41,7 @@ def parse_known_positions(known_list):
 
 
 def run():
+    print("CLI STARTED", flush=True)
 
     parser = argparse.ArgumentParser(
         description="Password Cracker (educational tool)"
@@ -124,5 +125,3 @@ def run():
     sys.stderr.write(f"Tiempo: {end_time - start_time:.2f} segundos\n")
 
 
-if __name__ == "__main__":
-    run()
