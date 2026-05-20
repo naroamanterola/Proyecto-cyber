@@ -122,3 +122,10 @@ def run():
 
     sys.stderr.write(f"Intentos: {attempts}\n")
     sys.stderr.write(f"Tiempo: {end_time - start_time:.2f} segundos\n")
+
+
+
+    print("START")
+    for i in range(1000000):
+        if i % 100000 == 0:
+            print(i)
