@@ -19,6 +19,13 @@ def dictionary_attack(hash_target, wordlist_path, algorithm):
 
     tqdm.write(f"\n[INFO] Total palabras: {total_words}\n")
 
+    # =========================
+    # PROGRESO POR BLOQUES
+    # =========================
+
+    update_every = max(total_words // 1000, 1)
+    counter = 0
+
     try:
         with open(wordlist_path, "r", encoding="utf-8", errors="ignore") as file:
 
@@ -29,15 +36,27 @@ def dictionary_attack(hash_target, wordlist_path, algorithm):
                 file=sys.stderr,
                 dynamic_ncols=True,
                 mininterval=0,
-                maxinterval=0.1
+                maxinterval=0.2
             ) as pbar:
 
                 for word in file:
 
                     word = word.strip()
                     attempts += 1
+                    counter += 1
+
+                    # =========================
+                    # UPDATE POR BLOQUES
+                    # =========================
+                    if counter % update_every == 0:
+                        pbar.update(update_every)
 
                     if hash_text(word, algorithm) == hash_target:
+
+                        # flush progreso restante
+                        remaining = counter % update_every
+                        if remaining:
+                            pbar.update(remaining)
 
                         elapsed = time.time() - start_time
                         speed = attempts / elapsed if elapsed > 0 else 0
@@ -49,8 +68,6 @@ def dictionary_attack(hash_target, wordlist_path, algorithm):
                         tqdm.write(f"Speed: {speed:.2f} words/s")
 
                         return word, attempts
-
-                    pbar.update(1)
 
     except FileNotFoundError:
         print("Wordlist no encontrada")
