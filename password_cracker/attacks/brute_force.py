@@ -1,6 +1,7 @@
 import itertools
 import time
 import sys
+import os
 from tqdm import tqdm
 
 from password_cracker.utils.hashing import hash_text
@@ -36,6 +37,11 @@ def brute_force_attack(
     known_positions=None
 ):
 
+    # =========================
+    # FIX GLOBAL WINDOWS BUFFERING
+    # =========================
+    os.environ["PYTHONUNBUFFERED"] = "1"
+
     attempts = 0
     start_time = time.time()
 
@@ -54,22 +60,19 @@ def brute_force_attack(
 
     tqdm.write(f"\n[INFO] Total combinaciones: {total}\n")
 
-    # =========================
-    # PROGRESO POR BLOQUES
-    # =========================
-
-    update_every = max(total // 1000, 1)  # ~1000 updates máximo
+    update_every = max(total // 1000, 1)
     counter = 0
 
     with tqdm(
         total=total,
-        desc="Brute force",   
+        desc="Brute force",
         unit="hash",
-        file=sys.stdout,      
+        file=sys.stderr,      # 🔥 clave más estable en Windows
         dynamic_ncols=True,
-        mininterval=0,        
-        maxinterval=0.05,
-        ascii=True 
+        mininterval=0,
+        maxinterval=0,
+        ascii=True,
+        disable=False
     ) as pbar:
 
         for length in range(min_length, max_length + 1):
@@ -87,6 +90,8 @@ def brute_force_attack(
                 # =========================
                 if counter % update_every == 0:
                     pbar.update(update_every)
+                    sys.stderr.flush()
+                    sys.stdout.flush()
 
                 if not matches_constraints(
                     word,
@@ -99,10 +104,12 @@ def brute_force_attack(
 
                 if hash_text(word, algorithm) == hash_target:
 
-                    # flush progreso restante
                     remaining = counter % update_every
                     if remaining:
                         pbar.update(remaining)
+
+                    sys.stderr.flush()
+                    sys.stdout.flush()
 
                     elapsed = time.time() - start_time
                     speed = attempts / elapsed if elapsed > 0 else 0

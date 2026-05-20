@@ -1,9 +1,14 @@
 import argparse
 import time
 import sys
+import os
 
 from password_cracker.attacks.dictionary import dictionary_attack
 from password_cracker.attacks.brute_force import brute_force_attack
+
+
+
+os.environ["PYTHONUNBUFFERED"] = "1"
 
 VALID_ALGORITHMS = [
     "md5",
