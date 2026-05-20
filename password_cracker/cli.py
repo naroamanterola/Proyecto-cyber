@@ -124,8 +124,5 @@ def run():
     sys.stderr.write(f"Tiempo: {end_time - start_time:.2f} segundos\n")
 
 
-
-    print("START")
-    for i in range(1000000):
-        if i % 100000 == 0:
-            print(i)
+if __name__ == "__main__":
+    run()
