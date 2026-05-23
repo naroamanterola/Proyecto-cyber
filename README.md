@@ -22,8 +22,9 @@ It implements different password cracking techniques such as dictionary attacks 
 
 ---
 
-## Project Structure
+## Project structure
 
+```
 password_cracker/
 │
 ├── attacks/
@@ -37,7 +38,7 @@ password_cracker/
 │
 ├── cli.py
 └── __init__.py
-
+```
 
 
 ## Installation & setup
