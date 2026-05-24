@@ -8,9 +8,8 @@ from password_cracker.attacks.brute_force import brute_force_attack
 
 
 # =========================================================================
-# CONFIGURACIÓN DE PANTALLA: Solución para la estabilidad de la consola
-# Desactivamos el almacenamiento en caché (buffering) de la salida de texto
-# Esto obliga a que los textos y barras de progreso se muestren en tiempo real, solucionando fallos visuales típicos cuando ejecutamos el programa en Windows
+# DISPLAY CONFIGURATION
+# Disable output buffering for better console stability on Windows
 # =========================================================================
 os.environ["PYTHONUNBUFFERED"] = "1"
 
@@ -20,7 +19,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(line_buffering=True)
 
-# Los algoritmos que se pueden utilizar
+# Supported hashing algorithms
 VALID_ALGORITHMS = [
     "md5",
     "sha1",
@@ -31,8 +30,10 @@ VALID_ALGORITHMS = [
 ]
 
 
-# Esta función ayuda a procesar las posiciones que ya conocemos de la contraseña
-# Si el usuario nos pasa una lista como ['0:A', '3:1'], la transforma en un diccionario de Python: {0: 'A', 3: '1'} para que el ataque pueda consultarlo rápido
+# Parse known positions from:
+# ['0:A', '3:1']
+# into:
+# {0: 'A', 3: '1'}
 def parse_known_positions(known_list):
 
     positions = {}
@@ -43,60 +44,62 @@ def parse_known_positions(known_list):
     for item in known_list:
 
         try:
-            # Separamos el texto por los dos puntos    "0:A" -> pos = "0", char = "A"
             pos, char = item.split(":")
-            # Guardamos la posición convirtiéndola a número entero 
             positions[int(pos)] = char
 
         except ValueError:
-            # Si el usuario escribe mal el formato ( "0-A" en vez de "0:A"), avisamos del error
-            sys.stderr.write(f"Formato inválido en --known: {item}\n")
+            sys.stderr.write(f"Invalid format in --known: {item}\n")
             return {}
 
     return positions
 
 
-# Función principal que configura los argumentos y arranca la herramienta
+# Main CLI function
 def run():
 
-    # Inicializamos el configurador de argumentos con una pequeña descripción del proyecto
     parser = argparse.ArgumentParser(
-        description="Password Cracker (educational tool)"
+        description="Educational Password Cracker Tool"
     )
 
-    # Definimos los parámetros obligatorios
-    parser.add_argument("--hash", required=True)    # El hash que queremos romper
-    parser.add_argument("--algo", required=True, choices=VALID_ALGORITHMS)  # El algoritmo (uno de la lista)
-    parser.add_argument("--attack", required=True, choices=["dict", "brute"])   # El tipo de ataque
+    # Required arguments
+    parser.add_argument("--hash", required=True)
+    parser.add_argument(
+        "--algo",
+        required=True,
+        choices=VALID_ALGORITHMS
+    )
 
-    # Parámetros opcionales dependiendo del ataque que elija el usuario
-    parser.add_argument("--wordlist")   # Ruta del diccionario para el ataque por diccionario
-    parser.add_argument("--mask")   # Máscara para el ataque fuerza bruta
+    parser.add_argument(
+        "--attack",
+        required=True,
+        choices=["dict", "brute"]
+    )
 
-    # Parámetros avanzados para recortar el rango de búsqueda en fuerza bruta
+    # Dictionary attack
+    parser.add_argument("--wordlist")
+
+    # Brute force attack
+    parser.add_argument("--mask")
+
     parser.add_argument("--min-length", type=int)
     parser.add_argument("--max-length", type=int)
 
-    # Parámetros para añadir restricciones extras (nargs="*" permite recibir múltiples textos)
-    parser.add_argument("--must-contain", nargs="*")    # Letras obligatorias
-    parser.add_argument("--known", nargs="*")   # Posiciones conocidas
+    parser.add_argument("--must-contain", nargs="*")
+    parser.add_argument("--known", nargs="*")
 
-    # Analizamos los argumentos introducidos por el usuario en la terminal
     args = parser.parse_args()
 
-    start_time = time.time()    # Empezamos a contar el tiempo global de la sesión
+    start_time = time.time()
 
     # =========================
-    # ATAQUE DICCIONARIO
+    # DICTIONARY ATTACK
     # =========================
     if args.attack == "dict":
-        
-        # Si elige diccionario pero indica el archivo de palabras, da error
+
         if not args.wordlist:
-            sys.stderr.write("Error: debes indicar --wordlist\n")
+            sys.stderr.write("Error: you must provide --wordlist\n")
             return
 
-        # Llamamos a nuestra función de ataque por diccionario pasándole los datos limpios
         result, attempts = dictionary_attack(
             args.hash,
             args.wordlist,
@@ -104,19 +107,16 @@ def run():
         )
 
     # =========================
-    # ATAQUE BRUTE FORCE
+    # BRUTE FORCE ATTACK
     # =========================
     elif args.attack == "brute":
 
-        # Si elige fuerza bruta pero no indica una máscara plantilla, da error
         if not args.mask:
-            sys.stderr.write("Error: debes indicar --mask\n")
+            sys.stderr.write("Error: you must provide --mask\n")
             return
 
-        # Procesamos la lista de posiciones conocidas para darle el formato correcto
         known_positions = parse_known_positions(args.known)
 
-        # Llamamos a nuestra función de fuerza bruta
         result, attempts = brute_force_attack(
             args.hash,
             args.mask,
@@ -128,28 +128,60 @@ def run():
         )
 
     else:
-        sys.stderr.write("Ataque no válido\n")
+        sys.stderr.write("Invalid attack type\n")
         return
 
-    end_time = time.time() 
+    end_time = time.time()
 
-    # =========================
-    # FINAL FLUSH: Aseguramos que la pantalla pinte todo lo pendiente antes del cierre
-    # =========================
+    elapsed = end_time - start_time
+    speed = attempts / elapsed if elapsed > 0 else 0
+
+    # Final flush
     sys.stdout.flush()
     sys.stderr.flush()
 
-    # Imprimimos el bloque de resumen final con los resultados
-    sys.stderr.write("\n--- RESULTADO ---\n")
+    # =========================
+    # RESULTS
+    # =========================
+    print("\n========== RESULTS ==========")
+
+    print(f"Target Hash   : {args.hash}")
+    print(f"Algorithm     : {args.algo}")
+    print(f"Attack Type   : {args.attack}")
+
+    if args.attack == "dict":
+        print(f"Wordlist      : {args.wordlist}")
+
+    elif args.attack == "brute":
+
+        print(f"Mask          : {args.mask}")
+
+        if args.min_length:
+            print(f"Min Length    : {args.min_length}")
+
+        if args.max_length:
+            print(f"Max Length    : {args.max_length}")
+
+        if args.must_contain:
+            print(f"Must Contain  : {args.must_contain}")
+
+        if args.known:
+            print(f"Known Chars   : {args.known}")
+
+    print("--------------------------------")
 
     if result:
-        sys.stderr.write(f"Contraseña encontrada: {result}\n")
+        print(f"Password Found: {result}")
     else:
-        sys.stderr.write("No encontrada\n")
+        print("Password Not Found")
 
-    sys.stderr.write(f"Intentos: {attempts}\n")
-    sys.stderr.write(f"Tiempo: {end_time - start_time:.2f} segundos\n")
+    print(f"Attempts      : {attempts}")
+    print(f"Execution Time: {elapsed:.2f} seconds")
+    print(f"Speed         : {speed:.2f} hashes/s")
 
-# Si ejecutamos el script directamente desde la terminal, se lanza la función run()
+    print("================================")
+
+
+# Run directly from terminal
 if __name__ == "__main__":
     run()
